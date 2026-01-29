@@ -5,11 +5,8 @@
 // Global Data Store
 let monitoringData = {
     totalEnergy: 0,
-    totalWater: 0,
     totalCost: 0,
-    co2Total: 0,
     currentPower: 0,
-    currentWaterFlow: 0,
     hourlyData: [],
     rooms: [],
     alerts: [],
@@ -20,16 +17,14 @@ let monitoringData = {
 const DEVICES = {
     lights: { name: 'Lights', icon: '💡', power: 0.06 },
     fan: { name: 'Fan', icon: '💨', power: 0.08 },
-    ac: { name: 'AC', icon: '❄️', power: 1.2 },
-    motor: { name: 'Motor', icon: '⚙️', power: 0.5 }
+    ac: { name: 'AC', icon: '❄️', power: 1.2 }
 };
 
 // Automation Settings
 let automationSettings = {
     lightsOffTime: '22:00',
     occupancyControl: true,
-    acTemp: 24,
-    tempThreshold: 2
+    acTemp: 24
 };
 
 // Room Definitions with Devices
@@ -45,8 +40,6 @@ const ROOMS = [
 ];
 
 const ENERGY_COST_PER_KWH = 7;
-const CO2_PER_KWH = 0.8;
-const WATER_COST_PER_LITER = 0.05;
 
 // Initialize hourly data
 function initHourlyData() {
@@ -54,7 +47,6 @@ function initHourlyData() {
         monitoringData.hourlyData.push({
             hour: i,
             energy: Math.random() * 50 + 30,
-            water: Math.random() * 200 + 100,
             cost: 0,
             timestamp: new Date(new Date().setHours(i, 0, 0, 0))
         });
@@ -67,16 +59,13 @@ function initRooms() {
         ...room,
         currentEnergy: Math.random() * 8 + 2,
         totalEnergy: Math.random() * 200 + 50,
-        currentWater: Math.random() * 20 + 5,
-        totalWater: Math.random() * 500 + 100,
         costToday: 0,
         status: 'normal',
         efficiency: Math.random() * 30 + 70,
         devices: {
             lights: { status: true, power: 0 },
             fan: { status: true, power: 0 },
-            ac: { status: true, power: 0 },
-            motor: { status: false, power: 0 }
+            ac: { status: true, power: 0 }
         },
         temperature: 25
     }));
@@ -110,7 +99,6 @@ function applyAutomationRules() {
     const now = new Date();
     const hours = now.getHours();
     const minutes = now.getMinutes();
-    const timeString = String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0');
     
     monitoringData.rooms.forEach(room => {
         // Time-based control: Lights off after specified time
@@ -118,17 +106,12 @@ function applyAutomationRules() {
         if (hours > lightOffHour || (hours === lightOffHour && minutes >= lightOffMin)) {
             if (room.devices.lights.status) {
                 room.devices.lights.status = false;
-                monitoringData.alerts.push({
-                    type: 'info',
-                    icon: '💡',
-                    message: `Lights auto-off in ${room.name} (After ${automationSettings.lightsOffTime})`
-                });
             }
         }
 
         // Occupancy-based control
         if (automationSettings.occupancyControl && room.currentOccupancy === 0) {
-            // Room empty - turn off all devices except emergency systems
+            // Room empty - turn off all devices
             if (room.devices.lights.status || room.devices.fan.status || room.devices.ac.status) {
                 room.devices.lights.status = false;
                 room.devices.fan.status = false;
@@ -144,7 +127,7 @@ function applyAutomationRules() {
                 room.devices.fan.status = true;
             }
             // AC control based on temperature
-            if (room.temperature > automationSettings.acTemp + automationSettings.tempThreshold) {
+            if (room.temperature > automationSettings.acTemp) {
                 room.devices.ac.status = true;
             } else if (room.temperature < automationSettings.acTemp) {
                 room.devices.ac.status = false;
@@ -167,19 +150,14 @@ window.toggleDevice = function(roomId, device) {
 // Update real-time data
 function updateRealtimeData() {
     monitoringData.currentPower = Math.random() * 80 + 40;
-    monitoringData.currentWaterFlow = Math.random() * 15 + 5;
     
     monitoringData.totalEnergy += (monitoringData.currentPower / 60);
-    monitoringData.totalWater += (monitoringData.currentWaterFlow / 60);
-    monitoringData.totalCost = monitoringData.totalEnergy * ENERGY_COST_PER_KWH + monitoringData.totalWater * WATER_COST_PER_LITER;
-    monitoringData.co2Total = monitoringData.totalEnergy * CO2_PER_KWH;
+    monitoringData.totalCost = monitoringData.totalEnergy * ENERGY_COST_PER_KWH;
     
     // Update room data
     monitoringData.rooms.forEach(room => {
-        const waterIncrease = Math.random() * 0.2 + 0.1;
         room.totalEnergy += room.currentEnergy / 60;
-        room.totalWater += waterIncrease;
-        room.costToday = room.totalEnergy * ENERGY_COST_PER_KWH + room.totalWater * WATER_COST_PER_LITER;
+        room.costToday = room.totalEnergy * ENERGY_COST_PER_KWH;
         room.temperature = 24 + Math.random() * 4;
         
         // Random occupancy fluctuation
@@ -215,14 +193,6 @@ function checkForAlerts() {
         });
     }
     
-    if (monitoringData.currentWaterFlow > 15) {
-        monitoringData.alerts.push({
-            type: 'warning',
-            icon: '💧',
-            message: `High Water Flow: ${monitoringData.currentWaterFlow.toFixed(1)} L/min`
-        });
-    }
-    
     const dangerRooms = monitoringData.rooms.filter(r => r.status === 'danger');
     if (dangerRooms.length > 0) {
         dangerRooms.forEach(room => {
@@ -238,14 +208,10 @@ function checkForAlerts() {
 // Update metrics
 function updateMetrics() {
     document.getElementById('totalEnergy').innerText = monitoringData.totalEnergy.toFixed(2) + ' kWh';
-    document.getElementById('totalWater').innerText = monitoringData.totalWater.toFixed(0) + ' L';
     document.getElementById('totalCost').innerText = '₹' + monitoringData.totalCost.toFixed(0);
-    document.getElementById('co2Total').innerText = monitoringData.co2Total.toFixed(2) + ' kg';
     
     document.getElementById('energyRate').innerText = `Current: ${monitoringData.currentPower.toFixed(1)} kW`;
-    document.getElementById('waterRate').innerText = `Current: ${monitoringData.currentWaterFlow.toFixed(1)} L/min`;
     document.getElementById('costRate').innerText = `Rate: ₹${(monitoringData.currentPower * ENERGY_COST_PER_KWH).toFixed(0)}/hour`;
-    document.getElementById('co2Rate').innerText = `Current: ${(monitoringData.currentPower * CO2_PER_KWH).toFixed(2)} kg/h`;
     
     const now = new Date();
     document.getElementById('lastUpdate').innerText = now.toLocaleTimeString();
@@ -342,9 +308,8 @@ function updateAnalyticsTable() {
             <td>${room.name}</td>
             <td>${room.currentOccupancy}/${room.occupancy}</td>
             <td>${room.totalEnergy.toFixed(2)}</td>
-            <td>${room.totalWater.toFixed(0)}</td>
             <td>₹${room.costToday.toFixed(0)}</td>
-            <td>${activeDevices}/4</td>
+            <td>${activeDevices}/3</td>
             <td class="status-badge">${room.status.toUpperCase()}</td>
         `;
         tbody.appendChild(row);
@@ -352,7 +317,7 @@ function updateAnalyticsTable() {
 }
 
 // Charts
-let energyChart, waterChart, costChart, deviceChart;
+let energyChart, costChart;
 
 function initializeCharts() {
     // Energy Chart
@@ -373,24 +338,6 @@ function initializeCharts() {
         options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true, max: 100 } } }
     });
 
-    // Water Chart
-    const ctx2 = document.getElementById('waterChart').getContext('2d');
-    waterChart = new Chart(ctx2, {
-        type: 'line',
-        data: {
-            labels: monitoringData.hourlyData.map(d => d.hour + ':00'),
-            datasets: [{
-                label: 'Water (L)',
-                data: monitoringData.hourlyData.map(d => d.water),
-                borderColor: '#00acc1',
-                backgroundColor: 'rgba(0, 172, 193, 0.1)',
-                tension: 0.4,
-                fill: true
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true, max: 300 } } }
-    });
-
     // Cost Chart
     const ctx3 = document.getElementById('costChart').getContext('2d');
     costChart = new Chart(ctx3, {
@@ -399,41 +346,13 @@ function initializeCharts() {
             labels: monitoringData.hourlyData.map(d => d.hour + ':00'),
             datasets: [{
                 label: 'Cost (₹)',
-                data: monitoringData.hourlyData.map(d => (d.energy * ENERGY_COST_PER_KWH + d.water * WATER_COST_PER_LITER) / 24),
+                data: monitoringData.hourlyData.map(d => (d.energy * ENERGY_COST_PER_KWH) / 24),
                 backgroundColor: 'rgba(76, 175, 80, 0.7)',
                 borderColor: '#4caf50',
                 borderWidth: 1
             }]
         },
         options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true } } }
-    });
-
-    // Device Distribution
-    const ctx4 = document.getElementById('deviceChart').getContext('2d');
-    const deviceUsage = {
-        lights: 0,
-        fan: 0,
-        ac: 0,
-        motor: 0
-    };
-    monitoringData.rooms.forEach(room => {
-        Object.keys(room.devices).forEach(device => {
-            if (room.devices[device].status) {
-                deviceUsage[device]++;
-            }
-        });
-    });
-
-    deviceChart = new Chart(ctx4, {
-        type: 'doughnut',
-        data: {
-            labels: ['Lights', 'Fans', 'AC', 'Motors'],
-            datasets: [{
-                data: [deviceUsage.lights, deviceUsage.fan, deviceUsage.ac, deviceUsage.motor],
-                backgroundColor: ['#FFD700', '#87CEEB', '#FF6B6B', '#4ECDC4']
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: true }
     });
 }
 
@@ -443,25 +362,13 @@ function updateCharts() {
     
     if (monitoringData.hourlyData[currentHour]) {
         monitoringData.hourlyData[currentHour].energy = monitoringData.currentPower * 0.6;
-        monitoringData.hourlyData[currentHour].water = monitoringData.currentWaterFlow * 30;
     }
     
     energyChart.data.datasets[0].data = monitoringData.hourlyData.map(d => d.energy);
-    waterChart.data.datasets[0].data = monitoringData.hourlyData.map(d => d.water);
-    costChart.data.datasets[0].data = monitoringData.hourlyData.map(d => (d.energy * ENERGY_COST_PER_KWH + d.water * WATER_COST_PER_LITER) / 24);
-    
-    const deviceUsage = { lights: 0, fan: 0, ac: 0, motor: 0 };
-    monitoringData.rooms.forEach(room => {
-        Object.keys(room.devices).forEach(device => {
-            if (room.devices[device].status) deviceUsage[device]++;
-        });
-    });
-    deviceChart.data.datasets[0].data = [deviceUsage.lights, deviceUsage.fan, deviceUsage.ac, deviceUsage.motor];
+    costChart.data.datasets[0].data = monitoringData.hourlyData.map(d => (d.energy * ENERGY_COST_PER_KWH) / 24);
     
     energyChart.update();
-    waterChart.update();
     costChart.update();
-    deviceChart.update();
 }
 
 // Update statistics
@@ -471,11 +378,6 @@ function updateStatistics() {
     
     document.getElementById('peakTime').innerText = peakHour.hour + ':00';
     document.getElementById('lowTime').innerText = lowHour.hour + ':00';
-    
-    const activeDevices = monitoringData.rooms.reduce((sum, room) => {
-        return sum + Object.values(room.devices).filter(d => d.status).length;
-    }, 0);
-    document.getElementById('devicesActive').innerText = activeDevices;
     document.getElementById('energySaved').innerText = monitoringData.energySaved.toFixed(2) + ' kWh';
 }
 
@@ -484,12 +386,10 @@ function loadSettings() {
     const lightsOffTime = document.getElementById('lightsOffTime');
     const occupancyControl = document.getElementById('occupancyControl');
     const acTemp = document.getElementById('acTemp');
-    const tempThreshold = document.getElementById('tempThreshold');
     
     if (lightsOffTime) lightsOffTime.addEventListener('change', function() { automationSettings.lightsOffTime = this.value; });
     if (occupancyControl) occupancyControl.addEventListener('change', function() { automationSettings.occupancyControl = this.checked; });
     if (acTemp) acTemp.addEventListener('change', function() { automationSettings.acTemp = parseInt(this.value); });
-    if (tempThreshold) tempThreshold.addEventListener('change', function() { automationSettings.tempThreshold = parseInt(this.value); });
 }
 
 // Global filter

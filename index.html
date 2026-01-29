@@ -25,24 +25,10 @@
         </div>
 
         <div class="card metric-card">
-            <div class="icon">💧</div>
-            <h3>Total Water Usage</h3>
-            <h2 id="totalWater">0 L</h2>
-            <p id="waterRate" class="rate">Current: 0 L/min</p>
-        </div>
-
-        <div class="card metric-card">
-            <div class="icon">💰</div>
+            <div class="icon">�</div>
             <h3>Cost Incurred</h3>
             <h2 id="totalCost">₹0</h2>
             <p id="costRate" class="rate">Rate: ₹0/hour</p>
-        </div>
-
-        <div class="card metric-card">
-            <div class="icon">🌱</div>
-            <h3>CO₂ Emissions</h3>
-            <h2 id="co2Total">0 kg</h2>
-            <p id="co2Rate" class="rate">Current: 0 kg/h</p>
         </div>
     </div>
 
@@ -71,11 +57,6 @@
                 <input type="number" id="acTemp" value="24" min="16" max="30">
                 <p class="setting-desc">°C (Auto-adjust based on occupancy)</p>
             </div>
-            <div class="setting-card">
-                <h4>🌡️ Temperature Threshold</h4>
-                <input type="number" id="tempThreshold" value="2" min="0" max="5">
-                <p class="setting-desc">°C difference to trigger AC</p>
-            </div>
         </div>
     </div>
 
@@ -88,16 +69,8 @@
                 <canvas id="energyChart"></canvas>
             </div>
             <div class="chart-card">
-                <h3>Water Usage</h3>
-                <canvas id="waterChart"></canvas>
-            </div>
-            <div class="chart-card">
                 <h3>Cost Timeline</h3>
                 <canvas id="costChart"></canvas>
-            </div>
-            <div class="chart-card">
-                <h3>Device Distribution</h3>
-                <canvas id="deviceChart"></canvas>
             </div>
         </div>
     </div>
@@ -121,7 +94,6 @@
                     <th>Room/Location</th>
                     <th>Occupancy</th>
                     <th>Electricity (kWh)</th>
-                    <th>Water (L)</th>
                     <th>Cost (₹)</th>
                     <th>Active Devices</th>
                     <th>Status</th>
@@ -141,10 +113,6 @@
         <div class="stat-card">
             <h4>Least Usage Time</h4>
             <p id="lowTime" class="stat-value">--:--</p>
-        </div>
-        <div class="stat-card">
-            <h4>Devices Active</h4>
-            <p id="devicesActive" class="stat-value">0</p>
         </div>
         <div class="stat-card">
             <h4>Energy Saved Today</h4>
