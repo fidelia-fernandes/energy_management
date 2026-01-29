@@ -2,78 +2,160 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Smart Energy Waste Management System</title>
+    <title>Smart Energy Management - Live Control Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
 <header>
-    <h1>Smart Energy Waste Management System</h1>
+    <h1>⚡ Smart Energy & Water Management - Live Control Dashboard</h1>
+    <p class="timestamp">Last Updated: <span id="lastUpdate">00:00:00</span> | Current Time: <span id="currentTime">00:00:00</span></p>
 </header>
 
 <div class="container">
-
+    <!-- Key Metrics -->
     <div class="card-container">
-        <div class="card">
-            <h3>Total Energy Used</h3>
+        <div class="card metric-card">
+            <div class="icon">⚡</div>
+            <h3>Total Electricity</h3>
             <h2 id="totalEnergy">0 kWh</h2>
+            <p id="energyRate" class="rate">Current: 0 kW</p>
         </div>
 
-        <div class="card">
-            <h3>Energy Wasted</h3>
-            <h2 id="wastedEnergy">0 kWh</h2>
+        <div class="card metric-card">
+            <div class="icon">💧</div>
+            <h3>Total Water Usage</h3>
+            <h2 id="totalWater">0 L</h2>
+            <p id="waterRate" class="rate">Current: 0 L/min</p>
         </div>
 
-        <div class="card">
-            <h3>Cost Saved</h3>
-            <h2 id="costSaved">₹0</h2>
+        <div class="card metric-card">
+            <div class="icon">💰</div>
+            <h3>Cost Incurred</h3>
+            <h2 id="totalCost">₹0</h2>
+            <p id="costRate" class="rate">Rate: ₹0/hour</p>
         </div>
 
-        <div class="card">
-            <h3>CO₂ Reduced</h3>
-            <h2 id="co2">0 kg</h2>
+        <div class="card metric-card">
+            <div class="icon">🌱</div>
+            <h3>CO₂ Emissions</h3>
+            <h2 id="co2Total">0 kg</h2>
+            <p id="co2Rate" class="rate">Current: 0 kg/h</p>
         </div>
     </div>
 
-    <div class="alert" id="alertBox">
-         High energy usage detected in Computer Lab after working hours!
+    <!-- Alerts Section -->
+    <div id="alertsContainer"></div>
+
+    <!-- Control Settings Section -->
+    <div class="control-settings">
+        <h2 class="section-title">⚙️ Automation Settings</h2>
+        <div class="settings-grid">
+            <div class="setting-card">
+                <h4>🕐 Auto Lights Off Time</h4>
+                <input type="time" id="lightsOffTime" value="22:00">
+                <p class="setting-desc">Lights will automatically turn off after this time</p>
+            </div>
+            <div class="setting-card">
+                <h4>👥 Occupancy Detection</h4>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="occupancyControl" checked>
+                    <span class="slider"></span>
+                </label>
+                <p class="setting-desc">Auto power-off when room is empty</p>
+            </div>
+            <div class="setting-card">
+                <h4>❄️ AC Temperature</h4>
+                <input type="number" id="acTemp" value="24" min="16" max="30">
+                <p class="setting-desc">°C (Auto-adjust based on occupancy)</p>
+            </div>
+            <div class="setting-card">
+                <h4>🌡️ Temperature Threshold</h4>
+                <input type="number" id="tempThreshold" value="2" min="0" max="5">
+                <p class="setting-desc">°C difference to trigger AC</p>
+            </div>
+        </div>
     </div>
 
-    <h2 class="section-title">Room-wise Energy Consumption</h2>
+    <!-- Time-based Charts -->
+    <div class="charts-section">
+        <h2 class="section-title">📊 Real-Time Analytics (24 Hours)</h2>
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>Electricity Consumption</h3>
+                <canvas id="energyChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Water Usage</h3>
+                <canvas id="waterChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Cost Timeline</h3>
+                <canvas id="costChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Device Distribution</h3>
+                <canvas id="deviceChart"></canvas>
+            </div>
+        </div>
+    </div>
 
-    <table>
-        <tr>
-            <th>Location</th>
-            <th>Energy Used (kWh)</th>
-            <th>Status</th>
-        </tr>
-        <tr>
-            <td>Classroom A</td>
-            <td>18</td>
-            <td>Normal</td>
-        </tr>
-        <tr>
-            <td>Computer Lab</td>
-            <td>42</td>
-            <td class="danger">Wastage Detected</td>
-        </tr>
-        <tr>
-            <td>Library</td>
-            <td>25</td>
-            <td>Optimized</td>
-        </tr>
-        <tr>
-            <td>Hostel Block</td>
-            <td>33</td>
-            <td>Normal</td>
-        </tr>
-    </table>
+    <!-- Room-wise Live Control -->
+    <h2 class="section-title">🏢 Room-wise Device Controls</h2>
+    <div class="room-filters">
+        <button class="filter-btn active" onclick="filterRooms('all')">All Rooms</button>
+        <button class="filter-btn" onclick="filterRooms('high')">High Usage</button>
+        <button class="filter-btn" onclick="filterRooms('warning')">Warnings</button>
+    </div>
+    
+    <div class="rooms-grid" id="roomsContainer"></div>
+
+    <!-- Detailed Table -->
+    <h2 class="section-title">📋 Room Analytics & Status</h2>
+    <div class="table-wrapper">
+        <table id="analyticsTable">
+            <thead>
+                <tr>
+                    <th>Room/Location</th>
+                    <th>Occupancy</th>
+                    <th>Electricity (kWh)</th>
+                    <th>Water (L)</th>
+                    <th>Cost (₹)</th>
+                    <th>Active Devices</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- Statistics -->
+    <h2 class="section-title">📈 Daily Statistics</h2>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h4>Peak Consumption Time</h4>
+            <p id="peakTime" class="stat-value">--:--</p>
+        </div>
+        <div class="stat-card">
+            <h4>Least Usage Time</h4>
+            <p id="lowTime" class="stat-value">--:--</p>
+        </div>
+        <div class="stat-card">
+            <h4>Devices Active</h4>
+            <p id="devicesActive" class="stat-value">0</p>
+        </div>
+        <div class="stat-card">
+            <h4>Energy Saved Today</h4>
+            <p id="energySaved" class="stat-value">0 kWh</p>
+        </div>
+    </div>
 
 </div>
 
 <footer>
-    © 2026 Smart Energy Management 
+    © 2026 Smart Energy & Water Management | Live Control System with AI Automation
 </footer>
 
 <script src="script.js"></script>
