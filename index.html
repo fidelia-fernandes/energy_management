@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Energy Waste Management System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h1>Smart Energy Waste Management System</h1>
+</header>
+
+<div class="container">
+
+    <div class="card-container">
+        <div class="card">
+            <h3>Total Energy Used</h3>
+            <h2 id="totalEnergy">0 kWh</h2>
+        </div>
+
+        <div class="card">
+            <h3>Energy Wasted</h3>
+            <h2 id="wastedEnergy">0 kWh</h2>
+        </div>
+
+        <div class="card">
+            <h3>Cost Saved</h3>
+            <h2 id="costSaved">₹0</h2>
+        </div>
+
+        <div class="card">
+            <h3>CO₂ Reduced</h3>
+            <h2 id="co2">0 kg</h2>
+        </div>
+    </div>
+
+    <div class="alert" id="alertBox">
+         High energy usage detected in Computer Lab after working hours!
+    </div>
+
+    <h2 class="section-title">Room-wise Energy Consumption</h2>
+
+    <table>
+        <tr>
+            <th>Location</th>
+            <th>Energy Used (kWh)</th>
+            <th>Status</th>
+        </tr>
+        <tr>
+            <td>Classroom A</td>
+            <td>18</td>
+            <td>Normal</td>
+        </tr>
+        <tr>
+            <td>Computer Lab</td>
+            <td>42</td>
+            <td class="danger">Wastage Detected</td>
+        </tr>
+        <tr>
+            <td>Library</td>
+            <td>25</td>
+            <td>Optimized</td>
+        </tr>
+        <tr>
+            <td>Hostel Block</td>
+            <td>33</td>
+            <td>Normal</td>
+        </tr>
+    </table>
+
+</div>
+
+<footer>
+    © 2026 Smart Energy Management 
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
